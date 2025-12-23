@@ -1051,33 +1051,33 @@ body#layout .sideB{width:40%}
 :root {
 /* Colors */
 --lStatusC: <b:eval expr='data:vars.status_light != &quot;transparent&quot; ? data:vars.status_light : &quot;#ffffff&quot;'/>;
---lHeadC: <data:vars.head_color/>;
---lBodyC: <data:vars.body_color/>;
---lBodyCa: <data:vars.body_colorAlt/>;
---lBodyB: <data:vars.body_bgColor/>;
---lLinkC: <data:vars.link_color/>;
---lLinkB: <data:vars.link_bgColor/>;
---lIconC: <data:vars.icon_color/>;
---lIconCa: <data:vars.icon_colorAlt/>;
---lIconCs: <data:vars.icon_colorSec/>;
---lHeaderC: <data:vars.header_text/>;
---lHeaderB: <data:vars.header_bgColor/>;
---lNotifB: <data:vars.notif_bg/>;
---lNotifC: <data:vars.notif_color/>;
---lContentB: <data:vars.content_bg/>;
---lContentL: <data:vars.content_border/>;
---lMenuB: <data:vars.menu_bg/>;
---lSrchB: <data:vars.search_bg/>;
---lMobB: <data:vars.mob_bg/>;
---lMobC: <data:vars.mob_text/>;
---lFotB: <data:vars.foot_bg/>;
---lFotC: <data:vars.foot_text/>;
---darkT: <data:vars.dark_text/>;
---darkTa: <data:vars.dark_textAlt/>;
---darkL: <data:vars.dark_link/>;
---darkB: <data:vars.dark_bg/>;
---darkBa: <data:vars.dark_bgAlt/>;
---darkBs: <data:vars.dark_bgSec/>;
+--lHeadC: #0f2a1e;
+--lBodyC: #143124;
+--lBodyCa: #3e5a4a;
+--lBodyB: #ffffff;
+--lLinkC: #16a34a;
+--lLinkB: #16a34a;
+--lIconC: #1f7a3e;
+--lIconCa: #4b7b5f;
+--lIconCs: #6fa98a;
+--lHeaderC: #0f2a1e;
+--lHeaderB: #ffffff;
+--lNotifB: #e6f7ee;
+--lNotifC: #0f5132;
+--lContentB: #ffffff;
+--lContentL: #d7e5dd;
+--lMenuB: #ffffff;
+--lSrchB: #f6fbf7;
+--lMobB: #ffffff;
+--lMobC: #0f2a1e;
+--lFotB: #f1f7f3;
+--lFotC: #0f2a1e;
+--darkT: #e6f7ee;
+--darkTa: #cfe7da;
+--darkL: #4ade80;
+--darkB: #0b1510;
+--darkBa: #0f1d16;
+--darkBs: #112219;
 
 /* Font family */
 --fontS: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, Segoe UI Symbol, &quot;Noto Color Emoji&quot;;<b:with value='{ head: data:vars.font_head, body: data:vars.font_body, bodyAlt: data:vars.font_bodyAlt, code: data:vars.font_code }' var='fonts'>
