@@ -1521,11 +1521,27 @@ function UI.new(logger, blockList, decompiler)
     self.MinWindowWidth = 400
     self.MinWindowHeight = 300
     self.ExpandedHeight = 500
+
+    self.IsTouch = Services.UserInputService.TouchEnabled
+    self.Scale = self.IsTouch and 1.2 or 1
+    self.MobileSpacing = self.IsTouch and 10 or 6
     
     self.PendingGroups = {}
     self.UpdateConnection = nil
     
     return self
+end
+
+function UI:ScaleValue(value)
+    return ClonedFunctions.mathFloor(value * self.Scale)
+end
+
+function UI:GetViewportSize()
+    local cam = workspace.CurrentCamera
+    if cam then
+        return cam.ViewportSize
+    end
+    return Vector2.new(800, 600)
 end
 
 function UI:Build()
@@ -1614,10 +1630,22 @@ function UI:SetMaxZIndex()
 end
 
 function UI:BuildMain()
+    local viewport = self:GetViewportSize()
+    local targetWidth = self:ScaleValue(750)
+    local targetHeight = self:ScaleValue(500)
+    local maxWidth = ClonedFunctions.mathMax(320, viewport.X - 20)
+    local maxHeight = ClonedFunctions.mathMax(240, viewport.Y - 60)
+    local width = ClonedFunctions.mathMin(targetWidth, maxWidth)
+    local height = ClonedFunctions.mathMin(targetHeight, maxHeight)
+
+    self.MinWindowWidth = ClonedFunctions.mathMin(self:ScaleValue(420), maxWidth)
+    self.MinWindowHeight = ClonedFunctions.mathMin(self:ScaleValue(320), maxHeight)
+    self.ExpandedHeight = height
+
     self.Main = Utils.Create("Frame", {
         Name = "Main",
-        Size = UDim2.new(0, 750, 0, 500),
-        Position = UDim2.new(0.5, -375, 0.5, -250),
+        Size = UDim2.new(0, width, 0, height),
+        Position = UDim2.new(0.5, -width / 2, 0.5, -height / 2),
         BackgroundColor3 = Theme.Primary,
         BackgroundTransparency = Theme.Transparency,
         ClipsDescendants = true,
@@ -1631,10 +1659,12 @@ end
 
 function UI:BuildHeader()
     if not self.Main then return end
+
+    local headerHeight = self:ScaleValue(44)
     
     local header = Utils.Create("Frame", {
         Name = "Header",
-        Size = UDim2.new(1, 0, 0, 40),
+        Size = UDim2.new(1, 0, 0, headerHeight),
         BackgroundColor3 = Theme.Secondary,
         BackgroundTransparency = 0.3,
         Parent = self.Main
@@ -1655,11 +1685,11 @@ function UI:BuildHeader()
     Utils.Create("TextLabel", {
         Name = "Title",
         Size = UDim2.new(0, 150, 1, 0),
-        Position = UDim2.new(0, 14, 0, 0),
+        Position = UDim2.new(0, self:ScaleValue(14), 0, 0),
         BackgroundTransparency = 1,
         Text = "BLATANTSPY",
         TextColor3 = Theme.Text,
-        TextSize = 16,
+        TextSize = self:ScaleValue(16),
         Font = Enum.Font.GothamBold,
         TextXAlignment = Enum.TextXAlignment.Left,
         Parent = header
@@ -1668,11 +1698,11 @@ function UI:BuildHeader()
     Utils.Create("TextLabel", {
         Name = "Executor",
         Size = UDim2.new(0, 120, 1, 0),
-        Position = UDim2.new(0, 130, 0, 0),
+        Position = UDim2.new(0, self:ScaleValue(130), 0, 0),
         BackgroundTransparency = 1,
         Text = GetExecutorName(),
         TextColor3 = Theme.TextMuted,
-        TextSize = 12,
+        TextSize = self:ScaleValue(12),
         Font = Enum.Font.Gotham,
         TextXAlignment = Enum.TextXAlignment.Left,
         Parent = header
@@ -1680,8 +1710,8 @@ function UI:BuildHeader()
     
     local btnContainer = Utils.Create("Frame", {
         Name = "Buttons",
-        Size = UDim2.new(0, 80, 0, 28),
-        Position = UDim2.new(1, -90, 0.5, -14),
+        Size = UDim2.new(0, self:ScaleValue(90), 0, self:ScaleValue(32)),
+        Position = UDim2.new(1, -self:ScaleValue(100), 0.5, -self:ScaleValue(16)),
         BackgroundTransparency = 1,
         Parent = header
     })
@@ -1709,12 +1739,12 @@ end
 
 function UI:CreateHeaderButton(text, parent, callback)
     local btn = Utils.Create("TextButton", {
-        Size = UDim2.new(0, 28, 0, 28),
+        Size = UDim2.new(0, self:ScaleValue(30), 0, self:ScaleValue(30)),
         BackgroundColor3 = Theme.Tertiary,
         BackgroundTransparency = 0.3,
         Text = text,
         TextColor3 = Theme.Text,
-        TextSize = 14,
+        TextSize = self:ScaleValue(14),
         Font = Enum.Font.GothamBold,
         Parent = parent
     })
@@ -1740,10 +1770,12 @@ end
 function UI:BuildToolbar()
     if not self.Main then return end
     
+    local toolbarHeight = self:ScaleValue(40)
+
     self.Toolbar = Utils.Create("Frame", {
         Name = "Toolbar",
-        Size = UDim2.new(1, -24, 0, 36),
-        Position = UDim2.new(0, 12, 0, 46),
+        Size = UDim2.new(1, -24, 0, toolbarHeight),
+        Position = UDim2.new(0, 12, 0, self:ScaleValue(50)),
         BackgroundTransparency = 1,
         Parent = self.Main
     })
@@ -1752,7 +1784,7 @@ function UI:BuildToolbar()
     
     local searchBox = Utils.Create("TextBox", {
         Name = "Search",
-        Size = UDim2.new(0, 200, 0, 32),
+        Size = UDim2.new(0, self:ScaleValue(200), 0, self:ScaleValue(34)),
         Position = UDim2.new(0, 0, 0.5, -16),
         BackgroundColor3 = Theme.Tertiary,
         BackgroundTransparency = 0.5,
@@ -1760,7 +1792,7 @@ function UI:BuildToolbar()
         PlaceholderText = "Search...",
         PlaceholderColor3 = Theme.TextMuted,
         TextColor3 = Theme.Text,
-        TextSize = 14,
+        TextSize = self:ScaleValue(14),
         Font = Enum.Font.Gotham,
         ClearTextOnFocus = false,
         Parent = self.Toolbar
@@ -1780,8 +1812,8 @@ function UI:BuildToolbar()
     
     local filterContainer = Utils.Create("Frame", {
         Name = "Filters",
-        Size = UDim2.new(0, 300, 0, 32),
-        Position = UDim2.new(0, 210, 0.5, -16),
+        Size = UDim2.new(0, self:ScaleValue(330), 0, self:ScaleValue(34)),
+        Position = UDim2.new(0, self:ScaleValue(210), 0.5, -16),
         BackgroundTransparency = 1,
         Parent = self.Toolbar
     })
@@ -1801,8 +1833,8 @@ function UI:BuildToolbar()
     
     local actionContainer = Utils.Create("Frame", {
         Name = "Actions",
-        Size = UDim2.new(0, 90, 0, 32),
-        Position = UDim2.new(1, -90, 0.5, -16),
+        Size = UDim2.new(0, self:ScaleValue(100), 0, self:ScaleValue(34)),
+        Position = UDim2.new(1, -self:ScaleValue(100), 0.5, -16),
         BackgroundTransparency = 1,
         Parent = self.Toolbar
     })
@@ -1852,7 +1884,7 @@ function UI:CreateFilterButton(filterType, parent)
         BackgroundTransparency = isActive and 0.3 or 0.6,
         Text = " " .. short .. " ",
         TextColor3 = Theme.Text,
-        TextSize = 13,
+        TextSize = self:ScaleValue(13),
         Font = Enum.Font.GothamBold,
         Parent = parent
     })
@@ -1883,12 +1915,12 @@ end
 
 function UI:CreateActionButton(text, parent, callback)
     local btn = Utils.Create("TextButton", {
-        Size = UDim2.new(0, 32, 0, 32),
+        Size = UDim2.new(0, self:ScaleValue(34), 0, self:ScaleValue(34)),
         BackgroundColor3 = Theme.Tertiary,
         BackgroundTransparency = 0.5,
         Text = text,
         TextColor3 = Theme.Text,
-        TextSize = 14,
+        TextSize = self:ScaleValue(14),
         Font = Enum.Font.GothamBold,
         Parent = parent
     })
@@ -1918,8 +1950,8 @@ function UI:BuildLogArea()
     
     self.ContentFrame = Utils.Create("Frame", {
         Name = "LogFrame",
-        Size = UDim2.new(1, -24, 1, -100),
-        Position = UDim2.new(0, 12, 0, 88),
+        Size = UDim2.new(1, -24, 1, -self:ScaleValue(110)),
+        Position = UDim2.new(0, 12, 0, self:ScaleValue(92)),
         BackgroundColor3 = Theme.Secondary,
         BackgroundTransparency = 0.6,
         ClipsDescendants = true,
@@ -1933,7 +1965,7 @@ function UI:BuildLogArea()
         Name = "LogList",
         Size = UDim2.new(1, 0, 1, 0),
         BackgroundTransparency = 1,
-        ScrollBarThickness = 4,
+        ScrollBarThickness = self.IsTouch and 6 or 4,
         ScrollBarImageColor3 = Theme.Accent,
         ScrollBarImageTransparency = 0.5,
         CanvasSize = UDim2.new(0, 0, 0, 0),
@@ -1957,8 +1989,8 @@ function UI:BuildResizeHandle()
     
     local resizeHandle = Utils.Create("TextButton", {
         Name = "ResizeHandle",
-        Size = UDim2.new(0, 20, 0, 20),
-        Position = UDim2.new(1, -20, 1, -20),
+        Size = UDim2.new(0, self:ScaleValue(22), 0, self:ScaleValue(22)),
+        Position = UDim2.new(1, -self:ScaleValue(22), 1, -self:ScaleValue(22)),
         BackgroundColor3 = Theme.Accent,
         BackgroundTransparency = 0.7,
         Text = "",
@@ -2036,7 +2068,7 @@ function UI:CreateGroupItem(group)
     
     local item = Utils.Create("Frame", {
         Name = "Group_" .. tostring(group.Id),
-        Size = UDim2.new(1, -10, 0, 50),
+        Size = UDim2.new(1, -10, 0, self:ScaleValue(54)),
         BackgroundColor3 = Theme.Tertiary,
         BackgroundTransparency = 0.7,
         LayoutOrder = -entry.Id,
@@ -2061,13 +2093,13 @@ function UI:CreateGroupItem(group)
     
     local typeLabel = Utils.Create("TextLabel", {
         Name = "TypeLabel",
-        Size = UDim2.new(0, 36, 0, 20),
+        Size = UDim2.new(0, self:ScaleValue(38), 0, self:ScaleValue(22)),
         Position = UDim2.new(0, 14, 0, 5),
         BackgroundColor3 = entry:GetColor(),
         BackgroundTransparency = 0.7,
         Text = entry:GetTypeShort(),
         TextColor3 = Theme.Text,
-        TextSize = 12,
+        TextSize = self:ScaleValue(12),
         Font = Enum.Font.GothamBold,
         Parent = item
     })
@@ -2078,13 +2110,13 @@ function UI:CreateGroupItem(group)
     
     local countLabel = Utils.Create("TextLabel", {
         Name = "CountLabel",
-        Size = UDim2.new(0, 40, 0, 20),
+        Size = UDim2.new(0, self:ScaleValue(44), 0, self:ScaleValue(22)),
         Position = UDim2.new(0, 54, 0, 5),
         BackgroundColor3 = Theme.Accent,
         BackgroundTransparency = 0.5,
         Text = "x" .. tostring(group.Count),
         TextColor3 = Theme.Text,
-        TextSize = 12,
+        TextSize = self:ScaleValue(12),
         Font = Enum.Font.GothamBold,
         Parent = item
     })
@@ -2097,13 +2129,13 @@ function UI:CreateGroupItem(group)
     
     local blockedLabel = Utils.Create("TextLabel", {
         Name = "BlockedLabel",
-        Size = UDim2.new(0, 60, 0, 20),
-        Position = UDim2.new(1, -100, 0, 5),
+        Size = UDim2.new(0, self:ScaleValue(64), 0, self:ScaleValue(22)),
+        Position = UDim2.new(1, -self:ScaleValue(110), 0, 5),
         BackgroundColor3 = Theme.Error,
         BackgroundTransparency = 0.3,
         Text = "BLOCKED",
         TextColor3 = Theme.Text,
-        TextSize = 10,
+        TextSize = self:ScaleValue(10),
         Font = Enum.Font.GothamBold,
         Visible = isBlocked,
         Parent = item
@@ -2115,12 +2147,12 @@ function UI:CreateGroupItem(group)
 
     Utils.Create("TextLabel", {
         Name = "NameLabel",
-        Size = UDim2.new(1, -180, 0, 20),
+        Size = UDim2.new(1, -180, 0, self:ScaleValue(22)),
         Position = UDim2.new(0, 100, 0, 5),
         BackgroundTransparency = 1,
         Text = entry.Remote.Name,
         TextColor3 = Theme.Text,
-        TextSize = 14,
+        TextSize = self:ScaleValue(14),
         Font = Enum.Font.GothamBold,
         TextXAlignment = Enum.TextXAlignment.Left,
         TextTruncate = Enum.TextTruncate.AtEnd,
@@ -2129,12 +2161,12 @@ function UI:CreateGroupItem(group)
     
     Utils.Create("TextLabel", {
         Name = "PathLabel",
-        Size = UDim2.new(1, -70, 0, 16),
+        Size = UDim2.new(1, -70, 0, self:ScaleValue(16)),
         Position = UDim2.new(0, 14, 0, 28),
         BackgroundTransparency = 1,
         Text = entry.RemotePath,
         TextColor3 = Theme.TextMuted,
-        TextSize = 11,
+        TextSize = self:ScaleValue(11),
         Font = Enum.Font.RobotoMono,
         TextXAlignment = Enum.TextXAlignment.Left,
         TextTruncate = Enum.TextTruncate.AtEnd,
@@ -2143,13 +2175,13 @@ function UI:CreateGroupItem(group)
     
     local expandBtn = Utils.Create("TextButton", {
         Name = "ExpandBtn",
-        Size = UDim2.new(0, 24, 0, 24),
-        Position = UDim2.new(1, -32, 0, 13),
+        Size = UDim2.new(0, self:ScaleValue(26), 0, self:ScaleValue(26)),
+        Position = UDim2.new(1, -self:ScaleValue(34), 0, self:ScaleValue(13)),
         BackgroundColor3 = Theme.Quaternary,
         BackgroundTransparency = 0.5,
         Text = "▼",
         TextColor3 = Theme.Text,
-        TextSize = 10,
+        TextSize = self:ScaleValue(10),
         Font = Enum.Font.GothamBold,
         Parent = item
     })
@@ -2178,7 +2210,7 @@ function UI:CreateGroupItem(group)
     
     local clickBtn = Utils.Create("TextButton", {
         Name = "ClickBtn",
-        Size = UDim2.new(1, -40, 0, 50),
+        Size = UDim2.new(1, -40, 0, self:ScaleValue(54)),
         Position = UDim2.new(0, 0, 0, 0),
         BackgroundTransparency = 1,
         Text = "",
@@ -2260,8 +2292,11 @@ function UI:UpdateGroupItem(group)
     if group.Expanded and itemData.EntriesContainer then
         self:PopulateGroupEntries(group, itemData.EntriesContainer)
         
-        local entryHeight = 36
-        local containerHeight = #group.Entries * (entryHeight + 2)
+    local entryHeight = 36
+    if self.IsTouch then
+        entryHeight = 42
+    end
+    local containerHeight = #group.Entries * (entryHeight + 2)
         Utils.SafeSet(itemData.EntriesContainer, "Size", UDim2.new(1, -20, 0, containerHeight))
         Utils.Tween(itemData.Frame, {Size = UDim2.new(1, -10, 0, 50 + containerHeight + 10)}, 0.2)
     end
@@ -2276,6 +2311,9 @@ function UI:ToggleGroupExpansion(group, item, container, expandBtn)
         self:PopulateGroupEntries(group, container)
         
         local entryHeight = 36
+        if self.IsTouch then
+            entryHeight = 42
+        end
         local containerHeight = #group.Entries * (entryHeight + 2)
         
         Utils.SafeSet(container, "Size", UDim2.new(1, -20, 0, containerHeight))
@@ -2321,7 +2359,7 @@ function UI:CreateSubEntryItem(entry, parent, index)
     
     local subItem = Utils.Create("Frame", {
         Name = "Entry_" .. tostring(entry.Id),
-        Size = UDim2.new(1, 0, 0, 36),
+        Size = UDim2.new(1, 0, 0, self.IsTouch and 42 or 36),
         BackgroundColor3 = Theme.Secondary,
         BackgroundTransparency = 0.5,
         LayoutOrder = index,
@@ -2348,7 +2386,7 @@ function UI:CreateSubEntryItem(entry, parent, index)
         BackgroundTransparency = 1,
         Text = "#" .. tostring(index),
         TextColor3 = Theme.TextDim,
-        TextSize = 11,
+        TextSize = self:ScaleValue(11),
         Font = Enum.Font.GothamBold,
         TextXAlignment = Enum.TextXAlignment.Left,
         Parent = subItem
@@ -2360,7 +2398,7 @@ function UI:CreateSubEntryItem(entry, parent, index)
         BackgroundTransparency = 1,
         Text = tostring(#entry.Arguments) .. " args",
         TextColor3 = Theme.TextMuted,
-        TextSize = 11,
+        TextSize = self:ScaleValue(11),
         Font = Enum.Font.Gotham,
         TextXAlignment = Enum.TextXAlignment.Left,
         Parent = subItem
@@ -2381,7 +2419,7 @@ function UI:CreateSubEntryItem(entry, parent, index)
         BackgroundTransparency = 1,
         Text = callerName .. (entry.RemoteType ~= "OnClientEvent" and not ClonedFunctions.stringFind(entry.RemoteType, "ActorCall_", 1, true) and (" @ line " .. tostring(entry.CallerInfo.Line or 0)) or ""),
         TextColor3 = Theme.TextDim,
-                TextSize = 10,
+        TextSize = self:ScaleValue(10),
         Font = Enum.Font.RobotoMono,
         TextXAlignment = Enum.TextXAlignment.Left,
         TextTruncate = Enum.TextTruncate.AtEnd,
@@ -2456,8 +2494,8 @@ function UI:OpenDetailWindow(entry)
     
     local window = Utils.Create("Frame", {
         Name = windowId,
-        Size = UDim2.new(0, 600, 0, 500),
-        Position = UDim2.new(0.5, -300, 0.5, -250),
+        Size = UDim2.new(0, self:ScaleValue(620), 0, self:ScaleValue(520)),
+        Position = UDim2.new(0.5, -self:ScaleValue(310), 0.5, -self:ScaleValue(260)),
         BackgroundColor3 = Theme.Primary,
         BackgroundTransparency = Theme.Transparency,
         Parent = self.Gui
@@ -2470,7 +2508,7 @@ function UI:OpenDetailWindow(entry)
     self.SubWindows[windowId] = window
     
     local header = Utils.Create("Frame", {
-        Size = UDim2.new(1, 0, 0, 36),
+        Size = UDim2.new(1, 0, 0, self:ScaleValue(38)),
         BackgroundColor3 = entry:GetColor(),
         BackgroundTransparency = 0.7,
         Parent = window
@@ -2490,24 +2528,24 @@ function UI:OpenDetailWindow(entry)
         
         Utils.Create("TextLabel", {
             Size = UDim2.new(1, -70, 1, 0),
-            Position = UDim2.new(0, 12, 0, 0),
+            Position = UDim2.new(0, self:ScaleValue(12), 0, 0),
             BackgroundTransparency = 1,
             Text = entry:GetTypeShort() .. " | " .. tostring(entry.Remote.Name) .. " | ID: " .. tostring(entry.Id),
             TextColor3 = Theme.Text,
-            TextSize = 15,
+            TextSize = self:ScaleValue(15),
             Font = Enum.Font.GothamBold,
             TextXAlignment = Enum.TextXAlignment.Left,
             Parent = header
         })
         
         local closeBtn = Utils.Create("TextButton", {
-            Size = UDim2.new(0, 28, 0, 28),
-            Position = UDim2.new(1, -36, 0.5, -14),
+            Size = UDim2.new(0, self:ScaleValue(30), 0, self:ScaleValue(30)),
+            Position = UDim2.new(1, -self:ScaleValue(38), 0.5, -self:ScaleValue(15)),
             BackgroundColor3 = Theme.Error,
             BackgroundTransparency = 0.3,
             Text = "X",
             TextColor3 = Theme.Text,
-            TextSize = 14,
+            TextSize = self:ScaleValue(14),
             Font = Enum.Font.GothamBold,
             Parent = header
         })
@@ -2526,8 +2564,8 @@ function UI:OpenDetailWindow(entry)
     end
     
     local btnFrame = Utils.Create("Frame", {
-        Size = UDim2.new(1, -24, 0, 32),
-        Position = UDim2.new(0, 12, 0, 42),
+        Size = UDim2.new(1, -24, 0, self:ScaleValue(34)),
+        Position = UDim2.new(0, 12, 0, self:ScaleValue(46)),
         BackgroundTransparency = 1,
         Parent = window
     })
@@ -2625,8 +2663,8 @@ function UI:OpenDetailWindow(entry)
     end
     
     local contentFrame = Utils.Create("Frame", {
-        Size = UDim2.new(1, -24, 1, -90),
-        Position = UDim2.new(0, 12, 0, 80),
+        Size = UDim2.new(1, -24, 1, -self:ScaleValue(98)),
+        Position = UDim2.new(0, 12, 0, self:ScaleValue(88)),
         BackgroundColor3 = Theme.Secondary,
         BackgroundTransparency = 0.5,
         ClipsDescendants = true,
@@ -2656,7 +2694,7 @@ function UI:OpenDetailWindow(entry)
             detailLabel.AutomaticSize = Enum.AutomaticSize.Y
             detailLabel.BackgroundTransparency = 1
             detailLabel.TextColor3 = Theme.Text
-            detailLabel.TextSize = 13
+            detailLabel.TextSize = self:ScaleValue(13)
             detailLabel.Font = Enum.Font.RobotoMono
             detailLabel.TextXAlignment = Enum.TextXAlignment.Left
             detailLabel.TextYAlignment = Enum.TextYAlignment.Top
@@ -2669,8 +2707,8 @@ function UI:OpenDetailWindow(entry)
     
     self:SetupSubWindowResize(window)
     
-    Utils.SafeSet(window, "Size", UDim2.new(0, 600, 0, 0))
-    Utils.Tween(window, {Size = UDim2.new(0, 600, 0, 500)}, 0.25, Enum.EasingStyle.Back)
+    Utils.SafeSet(window, "Size", UDim2.new(0, self:ScaleValue(620), 0, 0))
+    Utils.Tween(window, {Size = UDim2.new(0, self:ScaleValue(620), 0, self:ScaleValue(520))}, 0.25, Enum.EasingStyle.Back)
 end
 
 function UI:OpenDecompileWindow(entry)
@@ -2696,8 +2734,8 @@ function UI:OpenDecompileWindow(entry)
     
     local window = Utils.Create("Frame", {
         Name = windowId,
-        Size = UDim2.new(0, 700, 0, 550),
-        Position = UDim2.new(0.5, -350, 0.5, -275),
+        Size = UDim2.new(0, self:ScaleValue(720), 0, self:ScaleValue(570)),
+        Position = UDim2.new(0.5, -self:ScaleValue(360), 0.5, -self:ScaleValue(285)),
         BackgroundColor3 = Theme.Primary,
         BackgroundTransparency = Theme.Transparency,
         Parent = self.Gui
@@ -2710,7 +2748,7 @@ function UI:OpenDecompileWindow(entry)
     self.SubWindows[windowId] = window
     
     local header = Utils.Create("Frame", {
-        Size = UDim2.new(1, 0, 0, 36),
+        Size = UDim2.new(1, 0, 0, self:ScaleValue(38)),
         BackgroundColor3 = Theme.Accent,
         BackgroundTransparency = 0.7,
         Parent = window
@@ -2735,24 +2773,24 @@ function UI:OpenDecompileWindow(entry)
         
         Utils.Create("TextLabel", {
             Size = UDim2.new(1, -70, 1, 0),
-            Position = UDim2.new(0, 12, 0, 0),
+            Position = UDim2.new(0, self:ScaleValue(12), 0, 0),
             BackgroundTransparency = 1,
             Text = titleText,
             TextColor3 = Theme.Text,
-            TextSize = 15,
+            TextSize = self:ScaleValue(15),
             Font = Enum.Font.GothamBold,
             TextXAlignment = Enum.TextXAlignment.Left,
             Parent = header
         })
         
         local closeBtn = Utils.Create("TextButton", {
-            Size = UDim2.new(0, 28, 0, 28),
-            Position = UDim2.new(1, -36, 0.5, -14),
+            Size = UDim2.new(0, self:ScaleValue(30), 0, self:ScaleValue(30)),
+            Position = UDim2.new(1, -self:ScaleValue(38), 0.5, -self:ScaleValue(15)),
             BackgroundColor3 = Theme.Error,
             BackgroundTransparency = 0.3,
             Text = "X",
             TextColor3 = Theme.Text,
-            TextSize = 14,
+            TextSize = self:ScaleValue(14),
             Font = Enum.Font.GothamBold,
             Parent = header
         })
@@ -2773,13 +2811,13 @@ function UI:OpenDecompileWindow(entry)
     local decompiled = self.Decompiler:Process(scriptToDecompile)
     
     local copyBtn = Utils.Create("TextButton", {
-        Size = UDim2.new(0, 90, 0, 28),
-        Position = UDim2.new(0, 12, 0, 42),
+        Size = UDim2.new(0, self:ScaleValue(100), 0, self:ScaleValue(30)),
+        Position = UDim2.new(0, self:ScaleValue(12), 0, self:ScaleValue(46)),
         BackgroundColor3 = Theme.Accent,
         BackgroundTransparency = 0.3,
         Text = "COPY",
         TextColor3 = Theme.Text,
-        TextSize = 13,
+        TextSize = self:ScaleValue(13),
         Font = Enum.Font.GothamBold,
         Parent = window
     })
@@ -2797,8 +2835,8 @@ function UI:OpenDecompileWindow(entry)
     end
     
     local contentFrame = Utils.Create("Frame", {
-        Size = UDim2.new(1, -24, 1, -90),
-        Position = UDim2.new(0, 12, 0, 76),
+        Size = UDim2.new(1, -24, 1, -self:ScaleValue(98)),
+        Position = UDim2.new(0, 12, 0, self:ScaleValue(86)),
         BackgroundColor3 = Theme.Secondary,
         BackgroundTransparency = 0.5,
         ClipsDescendants = true,
@@ -2861,7 +2899,7 @@ function UI:OpenDecompileWindow(entry)
                         BackgroundTransparency = 1,
                         Text = numStr,
                         TextColor3 = Theme.TextMuted,
-                        TextSize = 13,
+                        TextSize = self:ScaleValue(13),
                         Font = Enum.Font.RobotoMono,
                         TextXAlignment = Enum.TextXAlignment.Right,
                         TextYAlignment = Enum.TextYAlignment.Top,
@@ -2877,7 +2915,7 @@ function UI:OpenDecompileWindow(entry)
                         Text = highlightedStr,
                         RichText = true,
                         TextColor3 = Theme.Text,
-                        TextSize = 13,
+                        TextSize = self:ScaleValue(13),
                         Font = Enum.Font.RobotoMono,
                         TextXAlignment = Enum.TextXAlignment.Left,
                         TextYAlignment = Enum.TextYAlignment.Top,
@@ -2891,8 +2929,8 @@ function UI:OpenDecompileWindow(entry)
     
     self:SetupSubWindowResize(window)
     
-    Utils.SafeSet(window, "Size", UDim2.new(0, 700, 0, 0))
-    Utils.Tween(window, {Size = UDim2.new(0, 700, 0, 550)}, 0.25, Enum.EasingStyle.Back)
+    Utils.SafeSet(window, "Size", UDim2.new(0, self:ScaleValue(720), 0, 0))
+    Utils.Tween(window, {Size = UDim2.new(0, self:ScaleValue(720), 0, self:ScaleValue(570))}, 0.25, Enum.EasingStyle.Back)
 end
 
 function UI:SetupSubWindowResize(window)
@@ -2981,7 +3019,7 @@ function UI:CreateDetailButton(text, parent, callback)
         BackgroundTransparency = 0.4,
         Text = text,
         TextColor3 = Theme.Text,
-        TextSize = 13,
+        TextSize = self:ScaleValue(13),
         Font = Enum.Font.GothamBold,
         Parent = parent
     })
@@ -3009,8 +3047,8 @@ end
 
 function UI:ShowNotification(message, color)
     local notification = Utils.Create("Frame", {
-        Size = UDim2.new(0, 220, 0, 40),
-        Position = UDim2.new(1, -230, 1, 10),
+        Size = UDim2.new(0, self:ScaleValue(240), 0, self:ScaleValue(44)),
+        Position = UDim2.new(1, -self:ScaleValue(250), 1, 10),
         BackgroundColor3 = color or Theme.Accent,
         BackgroundTransparency = 0.15,
         Parent = self.Gui
@@ -3025,16 +3063,16 @@ function UI:ShowNotification(message, color)
         BackgroundTransparency = 1,
         Text = message,
         TextColor3 = Theme.Text,
-        TextSize = 14,
+        TextSize = self:ScaleValue(14),
         Font = Enum.Font.GothamBold,
         TextXAlignment = Enum.TextXAlignment.Left,
         Parent = notification
     })
     
-    Utils.Tween(notification, {Position = UDim2.new(1, -230, 1, -50)}, 0.2, Enum.EasingStyle.Back)
+    Utils.Tween(notification, {Position = UDim2.new(1, -self:ScaleValue(250), 1, -self:ScaleValue(56))}, 0.2, Enum.EasingStyle.Back)
     
     ClonedFunctions.taskDelay(1.5, function()
-        Utils.Tween(notification, {Position = UDim2.new(1, -230, 1, 10)}, 0.15)
+        Utils.Tween(notification, {Position = UDim2.new(1, -self:ScaleValue(250), 1, 10)}, 0.15)
         ClonedFunctions.taskWait(0.15)
         pcall(function()
             notification:Destroy()
@@ -3233,10 +3271,10 @@ end
 function UI:AnimateIn()
     if not self.Main then return end
     Utils.SafeSet(self.Main, "BackgroundTransparency", 1)
-    Utils.SafeSet(self.Main, "Size", UDim2.new(0, 750, 0, 0))
+    Utils.SafeSet(self.Main, "Size", UDim2.new(0, self.Main.Size.X.Offset, 0, 0))
     
     Utils.Tween(self.Main, {
-        Size = UDim2.new(0, 750, 0, 500),
+        Size = UDim2.new(0, self.Main.Size.X.Offset, 0, self.ExpandedHeight),
         BackgroundTransparency = Theme.Transparency
     }, 0.3, Enum.EasingStyle.Back)
 end
@@ -3255,7 +3293,7 @@ function UI:Close()
     
     if self.Main then
         Utils.Tween(self.Main, {
-            Size = UDim2.new(0, 750, 0, 0),
+            Size = UDim2.new(0, self.Main.Size.X.Offset, 0, 0),
             BackgroundTransparency = 1
         }, 0.2)
     end
